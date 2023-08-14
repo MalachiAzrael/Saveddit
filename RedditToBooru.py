@@ -83,7 +83,6 @@ def download(post: praw.models.Submission):
     urllib.request.urlretrieve(post.url, BASE_LOCATION + file_name)
     store_link_info(post)
     print("Unsaving", post.title)
-    #unsave(post)
 
 
 def gallery_dl(post: praw.models.Submission):
@@ -101,7 +100,6 @@ def gallery_dl(post: praw.models.Submission):
         urllib.request.urlretrieve(url, BASE_LOCATION + file_name)
         store_link_info(post)
     print("Unsaving", post.title)
-    #unsave(post)
 
 
 def store_link_info(post: praw.models.Submission):
@@ -165,7 +163,5 @@ def test():
 
     print(all_saved_items)
 
-
-#test()
 
 main()
