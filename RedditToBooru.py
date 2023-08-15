@@ -1,11 +1,21 @@
 import os.path
 import urllib.request
 import csv
+import json
 import praw
 from praw import models
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_file_path = os.path.join(script_dir, 'config.json')
+
+with open(config_file_path, "r") as config_file:
+    config = json.load(config_file)
+
+BASE_LOCATION = config["BASE_LOCATION"]
+CSV_PATH = config["CSV_PATH"]
+WHITELIST_PATH = config["WHITELIST_PATH"]
+
 # USER VARIABLES
-BASE_LOCATION = "E:/Documents/Uni Work/Computer Programming/Personal/BooruSort/TestStart/Hu/"  # Directory to save images
 ENABLE_WHITELIST_PROMPT = False  # Set to False to disable the whitelist prompt at the end
 DO_UNSAVE = False  # Decide if you want to unsave the post after downloading
 
@@ -18,14 +28,14 @@ def create_reddit() -> praw.Reddit:
     return reddit
 
 
-def load_whitelisted_subreddits(filename: str) -> set:
+def load_whitelisted_subreddits() -> set:
     """
     Load the whitelisted subreddits from the given file.
 
-    :param filename: Name of the file containing the whitelisted subreddits.
     :return: A set containing the whitelisted subreddits.
     """
-    with open(filename, 'r') as f:
+
+    with open(WHITELIST_PATH, 'r') as f:
         # Read each line, strip whitespace and convert to lowercase
         return set(line.strip().lower() for line in f)
 
@@ -40,7 +50,7 @@ def main():
     total_count = len(list(saved))
     saved = reddit.user.me().saved(limit=None)
     i = 0
-    whitelisted_subreddits = load_whitelisted_subreddits('whitelist.txt')
+    whitelisted_subreddits = load_whitelisted_subreddits()
     non_whitelisted_subreddits = set()
 
     # Loop through the saved items
@@ -83,7 +93,6 @@ def download(post: praw.models.Submission):
     urllib.request.urlretrieve(post.url, BASE_LOCATION + file_name)
     store_link_info(post)
     print("Unsaving", post.title)
-    #unsave(post)
 
 
 def gallery_dl(post: praw.models.Submission):
@@ -101,7 +110,6 @@ def gallery_dl(post: praw.models.Submission):
         urllib.request.urlretrieve(url, BASE_LOCATION + file_name)
         store_link_info(post)
     print("Unsaving", post.title)
-    #unsave(post)
 
 
 def store_link_info(post: praw.models.Submission):
@@ -110,7 +118,7 @@ def store_link_info(post: praw.models.Submission):
 
     :param post: The Reddit post whose info needs to be stored.
     """
-    with open('E:/Documents/Uni Work/Computer Programming/Personal/redditRewrite/reddit_links.csv', 'a', newline='', encoding='utf-8') as file:
+    with open(CSV_PATH, 'a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         author = post.author.name if post.author else "Deleted"
         comment_section_url = 'https://www.reddit.com' + post.permalink
@@ -147,7 +155,7 @@ def add_to_whitelist(subreddit: str):
 
     :param subreddit: The subreddit name to add to the whitelist.
     """
-    with open('whitelist.txt', 'a') as f:
+    with open(WHITELIST_PATH, 'a') as f:
         f.write(f"\n{subreddit.lower()}")
 
 
